@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  root: "src/web",
+  root: path.resolve(__dirname, "./src/web"),
   plugins: [react()],
   build: {
     outDir: path.resolve(__dirname, "./public"),

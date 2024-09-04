@@ -6,6 +6,7 @@ WORKDIR /app
 FROM base as public
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
+COPY src ./
 RUN bun build:public
 
 FROM base AS start
