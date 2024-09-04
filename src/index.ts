@@ -37,6 +37,12 @@ type Connection = {
   clients: Array<ElysiaWS<ServerWebSocket<any>, any, any>>;
 }
 
+enum MessageType {
+  Play = "play",
+  Pause = "pause",
+  Repeat = "repeat",
+}
+
 const connections = new Map<string, Connection>();
 
 const discord = new Client({
@@ -183,7 +189,7 @@ const app = new Elysia()
     message: async (ws, message) => {
       try {
         switch (message.type) {
-          case "play": {
+          case MessageType.Play: {
             const entity = findEntityByChannelId(ws.data.params.channelId);
 
             const url = `https://www.youtube.com/watch?v=${message.videoId}`;
@@ -204,7 +210,7 @@ const app = new Elysia()
             return;
           }
 
-          case "pause": {
+          case MessageType.Pause: {
             const entity = findEntityByChannelIdAndCheckPlaying(ws.data.params.channelId);
             if (!entity.isPaused) entity.player.pause(); else entity.player.unpause();
             entity.isPaused = !entity.isPaused;
@@ -212,7 +218,7 @@ const app = new Elysia()
             return;
           }
 
-          case "repeat": {
+          case MessageType.Repeat: {
             const entity = findEntityByChannelIdAndCheckPlaying(ws.data.params.channelId);
             entity.isRepeating = !entity.isRepeating;
             updateEntity(entity);
@@ -230,14 +236,14 @@ const app = new Elysia()
     },
     body: t.Union([
       t.Object({
-        type: t.Literal("play"),
+        type: t.Literal(MessageType.Play),
         videoId: t.String(),
       }),
       t.Object({
-        type: t.Literal("pause"),
+        type: t.Literal(MessageType.Pause),
       }),
       t.Object({
-        type: t.Literal("repeat"),
+        type: t.Literal(MessageType.Repeat),
       }),
     ]),
     response: t.Union([
