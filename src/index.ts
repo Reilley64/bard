@@ -18,6 +18,8 @@ import { type ServerWebSocket } from "bun";
 import type { ElysiaWS } from "elysia/ws";
 import staticPlugin from "@elysiajs/static";
 
+import { BadRequestException, NotFoundException, ResponseStatusException } from "./errors.ts";
+
 type Video = {
   id: string;
   title: string;
@@ -33,15 +35,6 @@ type Connection = {
   connection: VoiceConnection;
   player: AudioPlayer;
   clients: Array<ElysiaWS<ServerWebSocket<any>, any, any>>;
-}
-
-class ResponseStatusException extends Error {
-  status: number;
-
-  constructor(status: number, message: string) {
-      super(message);
-      this.status = status;
-  }
 }
 
 const connections = new Map<string, Connection>();
@@ -68,7 +61,7 @@ const youtube = google.youtube({
 
 function findEntityByChannelId(channelId: string) {
   if (!connections.has(channelId)) {
-    throw new ResponseStatusException(400, `Channel with id ${channelId} hasn't been joined`);
+    throw new BadRequestException(`Channel with id ${channelId} hasn't been joined`);
   }
 
   return connections.get(channelId)!;
@@ -78,7 +71,7 @@ function findEntityByChannelIdAndCheckPlaying(channelId: string) {
   const entity = findEntityByChannelId(channelId);
 
   if (!entity.playing) {
-    throw new ResponseStatusException(400, `Channel with id ${channelId} is not playing anything`);
+    throw new BadRequestException(`Channel with id ${channelId} is not playing anything`);
   }
 
   return entity;
@@ -117,12 +110,12 @@ const app = new Elysia()
 
         const guild = await discord.guilds.fetch(guildId);
         if (!guild) {
-          throw new ResponseStatusException(404, `Guild with id ${guildId} not found`);
+          throw new NotFoundException(`Guild with id ${guildId} not found`);
         }
 
         const channel = await guild.channels.fetch(channelId);
         if (!channel) {
-          throw new ResponseStatusException(404, `Channel with id ${channelId} not found`);
+          throw new NotFoundException(`Channel with id ${channelId} not found`);
         }
 
         const connection = await (async () => {
@@ -175,16 +168,16 @@ const app = new Elysia()
           isRepeating: false,
           connection,
           player,
-          clients: [ws]
+          clients: [ws],
         };
         updateEntity(entity);
       } catch (error) {
         if (error instanceof ResponseStatusException) {
-          ws.send({ status: error.status, body: error.message });
+          ws.send({ status: error.status, body: { title: error.message, status: error.status, detail: error.detail } });
           return;
         }
 
-        ws.send({ status: 500, body: "Internal server error" });
+        ws.send({ status: 500, body: { title: "Internal server error", status: 500 } });
       }
     },
     message: async (ws, message) => {
@@ -228,11 +221,11 @@ const app = new Elysia()
         }
       } catch (error) {
         if (error instanceof ResponseStatusException) {
-          ws.send({ status: error.status, body: error.message });
+          ws.send({ status: error.status, body: { title: error.message, status: error.status, detail: error.detail } });
           return;
         }
 
-        ws.send({ status: 500, body: "Internal server error" });
+        ws.send({ status: 500, body: { title: "Internal server error", status: 500 } });
       }
     },
     body: t.Union([
@@ -264,7 +257,11 @@ const app = new Elysia()
       }),
       t.Object({
         status: t.Numeric({ minimum: 300 }),
-        body: t.String(),
+        body: t.Object({
+          title: t.String(),
+          status: t.Numeric({ minimum: 300 }),
+          detail: t.Optional(t.String()),
+        }),
       }),
     ]),
   })
