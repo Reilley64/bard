@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y build-essential python3 ffmpeg
 ENV NODE_ENV=production
 WORKDIR /app
 
-FROM base as public
+FROM base AS public
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 COPY . .
