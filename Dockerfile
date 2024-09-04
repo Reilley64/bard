@@ -7,7 +7,7 @@ FROM base AS build
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile --production
 COPY src ./
-RUN bun build src.index.ts --target bun --outdir build
+RUN bun build:public
 
 FROM base AS runtime
 COPY --from=build /app /app
