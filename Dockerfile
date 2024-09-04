@@ -1,5 +1,5 @@
 FROM oven/bun AS base
-RUN apt-get update && apt-get install -y make python3 ffmpeg
+RUN apt-get update && apt-get install -y build-essential python3 ffmpeg
 ENV NODE_ENV=production
 WORKDIR /app
 
