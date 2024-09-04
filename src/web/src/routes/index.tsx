@@ -17,7 +17,7 @@ export const Route = createFileRoute('/')({
   component: Home,
 });
 
-export default function Home() {
+function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { search } = Route.useSearch<{ search?: string }>();
@@ -157,24 +157,23 @@ export default function Home() {
                 style={{ cursor: "pointer" }}
               />
 
-              {player.isPaused
-                ? (
-                  <PlayIcon
-                    fill="currentColor"
-                    onClick={() => player.send?.({ type: "pause" })}
-                    stroke="currentColor"
-                    strokeWidth={1}
-                    style={{ cursor: "pointer" }}
-                  />
-                ) : (
-                  <PauseIcon
-                    fill="currentColor"
-                    onClick={() => player.send?.({ type: "pause" })}
-                    stroke="currentColor"
-                    strokeWidth={1}
-                    style={{ cursor: "pointer" }}
-                  />
-                )}
+              {player.isPaused ? (
+                <PlayIcon
+                  fill="currentColor"
+                  onClick={() => player.send?.({ type: "pause" })}
+                  stroke="currentColor"
+                  strokeWidth={1}
+                  style={{ cursor: "pointer" }}
+                />
+              ) : (
+                <PauseIcon
+                  fill="currentColor"
+                  onClick={() => player.send?.({ type: "pause" })}
+                  stroke="currentColor"
+                  strokeWidth={1}
+                  style={{ cursor: "pointer" }}
+                />
+              )}
             </div>
           </div>
         </footer>
