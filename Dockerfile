@@ -6,12 +6,12 @@ WORKDIR /app
 FROM base as public
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
-COPY src ./
+COPY . .
 RUN bun build:public
 
 FROM base AS start
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile --production
-COPY src ./
+COPY /src /src
 COPY --from=public /app/public /app/public
 ENTRYPOINT ["bun", "start"]
