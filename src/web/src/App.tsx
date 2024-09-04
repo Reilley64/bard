@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
-import Player from "~/components/Player.tsx";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { routeTree } from "~/routeTree.gen.ts";
 
 const client = new QueryClient({
   defaultOptions: {
@@ -10,6 +11,8 @@ const client = new QueryClient({
   },
 });
 
+const router = createRouter({ routeTree });
+
 export default function App() {
   useEffect(() => {
     window.document.documentElement.classList.add("dark");
@@ -17,7 +20,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={client}>
-      <Player />
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 }

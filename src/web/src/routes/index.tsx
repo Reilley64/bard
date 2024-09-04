@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookmarkIcon, PauseIcon, PlayIcon, RepeatIcon } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Input } from "~/components/ui/input";
-import server from "~/lib/server";
-import usePlayer from "~/hooks/usePlayer";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert.tsx";
+import { Input } from "~/components/ui/input.tsx";
+import server from "~/lib/server.ts";
+import usePlayer from "~/hooks/usePlayer.ts";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 type Video = {
   id: string;
@@ -12,13 +13,16 @@ type Video = {
   thumbnail: string;
 }
 
-export default function Player() {
+export const Route = createFileRoute('/')({
+  component: Home,
+});
+
+export default function Home() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { search } = Route.useSearch<{ search?: string }>();
 
   const player = usePlayer();
-
-  const searchParams = new URLSearchParams(window.location.search);
-  const search = searchParams.get("search");
 
   const searchQuery = useQuery({
     queryKey: ["videos", "get", search],
@@ -58,7 +62,14 @@ export default function Player() {
     <div className="flex min-h-screen w-screen flex-col text-white font-[Geist]">
       <header className="sticky top-0 z-10 flex shrink-0 grow-0 basis-[64px] items-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto w-full max-w-[624px] items-center">
-          <form>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+
+              const formData = new FormData(e.currentTarget);
+              void navigate({ search: { search: formData.get("search") as string } });
+            }}
+          >
             <Input name="search" placeholder="Search" />
           </form>
         </div>
@@ -104,7 +115,7 @@ export default function Player() {
             </div>
           )}
 
-          {!searchQuery.isSuccess && bookmarksQuery.isSuccess && bookmarksQuery.data.length < 1 && (
+          {searchQuery.isPending && !searchQuery.isSuccess && bookmarksQuery.isSuccess && bookmarksQuery.data.length < 1 && (
             <Alert>
               <AlertTitle>
                 Start searching to get started
