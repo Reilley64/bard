@@ -155,7 +155,7 @@ const app = new Elysia()
           if (entity.playing && entity.isRepeating) {
             entity.player.play(createAudioResource(ytdl(`https://www.youtube.com/watch?v=${entity.playing.id}`, {
               filter: "audioonly",
-              highWaterMark: 1 << 25
+              highWaterMark: 1 << 25,
             })));
             return;
           }
